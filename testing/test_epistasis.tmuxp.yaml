@@ -1,0 +1,15 @@
+# link me in build directory and start with
+# tmuxp load test_epistasis.tmuxp.yaml
+session_name: test_epistasis
+windows:
+- test_sel:
+  panes:
+    - shell_command:
+      - export role="1"
+      - ./epistasis_analysis/epistasis_analysis -w ../epistasis_analysis/data/case/party_1.txt -x ../epistasis_analysis/data/control/party_1.txt -y ../epistasis_analysis/data/case/party_2.txt -z ../epistasis_analysis/data/control/party_2.txt -r $role
+    - shell_command:
+      - export role="0"
+      - ./epistasis_analysis/epistasis_analysis -w ../epistasis_analysis/data/case/party_1.txt -x ../epistasis_analysis/data/control/party_1.txt -y ../epistasis_analysis/data/case/party_2.txt -z ../epistasis_analysis/data/control/party_2.txt -r $role
+  options_after:
+    synchronize-panes: on
+

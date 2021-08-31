@@ -1,0 +1,12 @@
+[submodule "extern/MOTION"]
+	path = extern/MOTION
+	url = https://github.com/encryptogroup/MOTION.git
+[submodule "extern/fmt"]
+	path = extern/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "extern/spdlog"]
+	path = extern/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "extern/csv2"]
+	path = extern/csv2
+	url = https://github.com/p-ranav/csv2
