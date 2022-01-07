@@ -37,73 +37,55 @@ find_package(Boost QUIET ${REQUIRED_BOOST_VERSION}
         )
 set(Boost_USE_STATIC_LIBS ON)
 
-find_package(MOTION QUIET)
-if(MOTION_FOUND)
-  message(STATUS "Found MOTION")
-elseif (NOT ABY_FOUND AND NOT TARGET ABY::aby)
-  message("MOTION was not found: add MOTION subdirectory")
-  if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/MOTION/CMakeLists.txt")
-        find_package(Git REQUIRED)
-        message("initialize Git submodule: extern/MOTION")
-        execute_process(COMMAND git submodule update --init extern/MOTION
-                        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-    endif()
-    add_subdirectory(extern/MOTION)
-endif()
+  #if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/MOTION/CMakeLists.txt")
+        #find_package(Git REQUIRED)
+        #message("initialize Git submodule: extern/MOTION")
+        #execute_process(COMMAND git submodule update --init extern/MOTION
+                        #WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+    #endif()
+    #add_subdirectory(extern/MOTION)
+add_subdirectory(/home/kussel/git/motion-fork build/extern/MOTION)
 
-find_package(fmt QUIET)
-if (fmt_FOUND)
-    message(STATUS "Found fmt")
-elseif (NOT fmt_FOUND AND NOT TARGET fmt::fmt)
-    message("fmt was not found: add fmt subdirectory")
-    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/fmt/CMakeLists.txt")
-        find_package(Git REQUIRED)
-        message("initialize Git submodule: extern/fmt")
-        execute_process(COMMAND git submodule update --init extern/fmt
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-    endif ()
-    # we use the header-only version of fmt
-    # -> add `target_compile_definitions($TARGET PUBLIC FMT_HEADER_ONLY)` for
-    # targets using fmt
-    #set(FMT_TEST OFF CACHE BOOL "Enable building fmt tests" FORCE)
-    #add_subdirectory(extern/fmt)
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/fmt/CMakeLists.txt")
+    find_package(Git REQUIRED)
+    message("initialize Git submodule: extern/fmt")
+    execute_process(COMMAND git submodule update --init extern/fmt
+            WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 endif ()
+# we use the header-only version of fmt
+# -> add `target_compile_definitions($TARGET PUBLIC FMT_HEADER_ONLY)` for
+# targets using fmt
+set(FMT_TEST OFF CACHE BOOL "Enable building fmt tests" FORCE)
+add_subdirectory(extern/fmt)
 
-find_package(spdlog QUIET)
-if (spdlog_FOUND)
-    message(STATUS "Found spdlog")
-elseif (NOT spdlog_FOUND AND NOT TARGET spdlog::spdlog)
-    message("spdlog was not found: add spdlog subdirectory")
-    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/spdlog/CMakeLists.txt")
-        find_package(Git REQUIRED)
-        message("initialize Git submodule: extern/spdlog")
-        execute_process(COMMAND git submodule update --init extern/spdlog
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-    endif ()
-    add_subdirectory(extern/spdlog)
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/spdlog/CMakeLists.txt")
+   find_package(Git REQUIRED)
+   message("initialize Git submodule: extern/spdlog")
+   execute_process(COMMAND git submodule update --init extern/spdlog
+           WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 endif ()
+add_subdirectory(extern/spdlog)
 
-find_package(csv2 QUIET)
-if (csv2_FOUND)
-    message(STATUS "Found csv2")
-elseif (NOT csv2_FOUND AND NOT TARGET csv2::csv2)
-    message("csv2 was not found: add csv2 subdirectory")
-    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/csv2/CMakeLists.txt")
-        find_package(Git REQUIRED)
-        message("initialize Git submodule: extern/csv2")
-        execute_process(COMMAND git submodule update --init extern/csv2
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-    endif ()
-    add_subdirectory(extern/csv2)
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/pybind11/CMakeLists.txt")
+    find_package(Git REQUIRED)
+    message("initialize Git submodule: extern/pybind11")
+    execute_process(COMMAND git submodule update --init extern/pybind11
+            WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 endif ()
+add_subdirectory(extern/pybind11)
 
 set(${P}_MAIN_SOURCES
-  src/util.cpp
+  src/histogram_circuit_builder.cpp
  )
+
+set(${P}_HEADER
+    include/histogram_circuit_builder.h
+    )
 # main target
-add_executable(cord-mpc src/cord-mpc_main.cpp ${${P}_MAIN_SOURCES})
-target_link_libraries(cord-mpc
-  MOTION::motion spdlog::spdlog_header_only csv2::csv2
+pybind11_add_module(cord-mpc SYSTEM src/cord-mpc_main.cpp ${${P}_MAIN_SOURCES} ${${P}_HEADER})
+target_link_libraries(cord-mpc PUBLIC
+  MOTION::motion spdlog::spdlog_header_only
   fmt::fmt-header-only Boost::program_options)
+target_include_directories(cord-mpc PRIVATE extern/)
 target_compile_features(cord-mpc PUBLIC cxx_std_20)
 target_compile_options(cord-mpc PRIVATE ${${P}_EXTRA_WARNING_FLAGS})
