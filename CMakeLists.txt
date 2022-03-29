@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(CORD-MPC)
+project(mpc_histogram)
 set(P ${PROJECT_NAME})
 
 if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
@@ -20,6 +20,7 @@ set(${P}_EXTRA_WARNING_FLAGS
 
 # Custom compiler and linker flags
 add_compile_options("-pipe"
+  "-fPIC"
   "$<$<CONFIG:RELEASE>:-O2;-march=native>"
   "$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>"
   ${CMAKE_FLAGS_EXTRA})
@@ -37,14 +38,13 @@ find_package(Boost QUIET ${REQUIRED_BOOST_VERSION}
         )
 set(Boost_USE_STATIC_LIBS ON)
 
-  #if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/MOTION/CMakeLists.txt")
-        #find_package(Git REQUIRED)
-        #message("initialize Git submodule: extern/MOTION")
-        #execute_process(COMMAND git submodule update --init extern/MOTION
-                        #WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-    #endif()
-    #add_subdirectory(extern/MOTION)
-add_subdirectory(/home/kussel/git/motion-fork build/extern/MOTION)
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/MOTION/CMakeLists.txt")
+  find_package(Git REQUIRED)
+  message("initialize Git submodule: extern/MOTION")
+  execute_process(COMMAND git submodule update --init extern/MOTION
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+endif()
+add_subdirectory(extern/MOTION)
 
 if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/fmt/CMakeLists.txt")
     find_package(Git REQUIRED)
@@ -55,16 +55,8 @@ endif ()
 # we use the header-only version of fmt
 # -> add `target_compile_definitions($TARGET PUBLIC FMT_HEADER_ONLY)` for
 # targets using fmt
-set(FMT_TEST OFF CACHE BOOL "Enable building fmt tests" FORCE)
-add_subdirectory(extern/fmt)
-
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/spdlog/CMakeLists.txt")
-   find_package(Git REQUIRED)
-   message("initialize Git submodule: extern/spdlog")
-   execute_process(COMMAND git submodule update --init extern/spdlog
-           WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-endif ()
-add_subdirectory(extern/spdlog)
+#set(FMT_TEST OFF CACHE BOOL "Enable building fmt tests" FORCE)
+#add_subdirectory(extern/fmt)
 
 if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/pybind11/CMakeLists.txt")
     find_package(Git REQUIRED)
@@ -82,10 +74,10 @@ set(${P}_HEADER
     include/histogram_circuit_builder.h
     )
 # main target
-pybind11_add_module(cord-mpc SYSTEM src/cord-mpc_main.cpp ${${P}_MAIN_SOURCES} ${${P}_HEADER})
-target_link_libraries(cord-mpc PUBLIC
-  MOTION::motion spdlog::spdlog_header_only
+pybind11_add_module(${P} SYSTEM src/cord-mpc_main.cpp ${${P}_MAIN_SOURCES} ${${P}_HEADER})
+target_link_libraries(${P} PUBLIC
+  MOTION::motion
   fmt::fmt-header-only Boost::program_options)
-target_include_directories(cord-mpc PRIVATE extern/)
-target_compile_features(cord-mpc PUBLIC cxx_std_20)
-target_compile_options(cord-mpc PRIVATE ${${P}_EXTRA_WARNING_FLAGS})
+target_include_directories(${P} PRIVATE extern/)
+target_compile_features(${P} PUBLIC cxx_std_20)
+target_compile_options(${P} PRIVATE ${${P}_EXTRA_WARNING_FLAGS})

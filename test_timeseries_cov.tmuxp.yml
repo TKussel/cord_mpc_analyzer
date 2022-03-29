@@ -1,0 +1,19 @@
+# link me in build directory and start with
+# tmuxp load test_pycord.tmuxp.yaml
+session_name: test_pycord
+windows:
+- test_sel:
+  layout: tiled
+  panes:
+    - shell_command:
+      - echo "Party 2"
+      - python cord_mpc.py -fs 'http://192.168.178.11' -fp 8780 -k 5 -i 2 -a timeSeries -v covid-19 -ts 2020-01 -te 2020-12 -p "0@127.0.0.1:1337;1@127.0.0.1:1338;2@127.0.0.1:1339"
+    - shell_command:
+      - echo "Party 1"
+      - python cord_mpc.py -fs 'http://192.168.178.11' -fp 8780 -k 5 -i 1 -a timeSeries -v covid-19 -ts 2020-01 -te 2020-12 -p "0@127.0.0.1:1337;1@127.0.0.1:1338;2@127.0.0.1:1339"
+    - shell_command:
+      - echo "Party 0"
+      - python cord_mpc.py -fs 'http://192.168.178.11' -fp 8780 -k 5 -i 0 -a timeSeries -v covid-19 -ts 2020-01 -te 2020-12 -p "0@127.0.0.1:1337;1@127.0.0.1:1338;2@127.0.0.1:1339"
+  options_after:
+    synchronize-panes: on
+

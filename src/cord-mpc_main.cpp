@@ -27,9 +27,6 @@
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
-#include <boost/lexical_cast.hpp>
-#include <boost/program_options.hpp>
-#include "spdlog/spdlog.h"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
@@ -42,7 +39,6 @@
 
 #include "../include/histogram_circuit_builder.h"
 
-namespace program_options = boost::program_options;
 namespace fs = std::filesystem;
 namespace mo = encrypto::motion;
 
@@ -53,39 +49,6 @@ using Record = std::vector<Count>;
 using Result = std::vector<Count>;
 
 using Party = std::tuple<size_t, std::string, uint16_t>;
-
-bool CheckIpSyntax(const std::string& ip);
-
-mo::PartyPointer CreateParty(const size_t my_id, std::vector<Party> parties);
-
-void set_loglevel(uint8_t level){
-  switch (level) {
-    case 0:   spdlog::set_level(spdlog::level::off); break;
-    case 1:   spdlog::set_level(spdlog::level::critical); break;
-    case 2:   spdlog::set_level(spdlog::level::err); break;
-    case 3:   spdlog::set_level(spdlog::level::warn); break;
-    case 4:   spdlog::set_level(spdlog::level::info); break;
-    case 5:   spdlog::set_level(spdlog::level::debug); break;
-    case 6:   spdlog::set_level(spdlog::level::trace); break;
-    default:  throw std::runtime_error("Invalid Loglevel");
-  }
-}
-
-Result create_histogram(size_t my_id, std::vector<Party> parties, Record input_data, uint16_t k_threshold) {
-    auto party = CreateParty(my_id, parties);
-    auto result_shares = construct_histogram_circuit(input_data, parties.size(), k_threshold, party);
-   party->Run();
-   party->Finish();
-   Result clear_result;
-   clear_result.reserve(result_shares.size());
-   std::transform(result_shares.begin(), result_shares.end(),std::back_inserter(clear_result), [](auto& out_share){return out_share.template As<Count>();});
-   return clear_result;
-}
-
-PYBIND11_MODULE(mpc_histogram, m) {
-    m.doc() = "Construct Histograms using MPC";
-    m.def("create_histogram", &create_histogram, "Compute histogram using arithmetic and boolean GMW", "my_id"_a, "parties"_a, "input_data"_a, "k_threshold"_a);
-}
 
 const std::regex ipRegex(
     "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})");
@@ -126,4 +89,21 @@ encrypto::motion::PartyPointer CreateParty(const size_t my_id, const std::vector
   configuration->SetLoggingEnabled(logging);
   return party;
 }
+
+Result create_histogram(size_t my_id, std::vector<Party> parties, Record input_data, uint16_t k_threshold) {
+    auto party = CreateParty(my_id, parties);
+    auto result_shares = construct_histogram_circuit(input_data, parties.size(), k_threshold, party);
+   party->Run();
+   party->Finish();
+   Result clear_result;
+   clear_result.reserve(result_shares.size());
+   std::transform(result_shares.begin(), result_shares.end(),std::back_inserter(clear_result), [](auto& out_share){return out_share.template As<Count>();});
+   return clear_result;
+}
+
+PYBIND11_MODULE(mpc_histogram, m) {
+    m.doc() = "Construct Histograms using MPC";
+    m.def("create_histogram", &create_histogram, "Compute histogram using arithmetic and boolean GMW", "my_id"_a, "parties"_a, "input_data"_a, "k_threshold"_a);
+}
+
 

@@ -26,7 +26,6 @@
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
-#include "spdlog/spdlog.h"
 
 #include "base/party.h"
 #include "secure_type/secure_unsigned_integer.h"
@@ -73,6 +72,9 @@ std::vector<mo::SecureUnsignedInteger> construct_histogram_circuit(
       party->In<mo::MpcProtocol::kBooleanGmw>(mo::ToInput(k), 0);
   // suppress values under threshold
   for (auto& s : share_vec) {
+    size_t wiresize = s->GetWires().size();
+    threshold->GetMutableWires().resize(wiresize, zero->GetWires().front());
+
     auto safe = s > threshold;
     s = mo::SecureUnsignedInteger(safe.Mux(s.Get(), zero.Get()));
   }
