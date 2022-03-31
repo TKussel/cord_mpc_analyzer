@@ -160,7 +160,7 @@ def main():
     parser.add_argument('-i', '--id', required=True, type=int, help="ID of the local party")
     parser.add_argument('-p', '--parties', required=True, help="String giving all parties connection information in the form \"ID@IP:Port;NextID@NextIP:NextPort;...\"")
     parser.add_argument('-k', '--kthreshold', default=5, type=int, help="Threshold value for k anonymous results. k=0 desables the anonymization.")
-    parser.add_argument('-g', '--graphics', default=False, type=bool, help="Plot results")
+    # parser.add_argument('-g', '--graphics', default=False, type=bool, help="Plot results")
     parser.add_argument('-ts', '--timestart', help="Start month for time series analysis in the format YYYY-MM")
     parser.add_argument('-te', '--timeend', help="End month for time series analysis in the format YYYY-MM")
     args = parser.parse_args()
@@ -176,8 +176,8 @@ def main():
     elif algo == 'diagCoincidence':
         algo = [algo]
 
-    if args.graphics:
-        print("Plot output not implemented, yet")
+    # if args.graphics:
+        # print("Plot output not implemented, yet")
 
     connection_settings = parse_connection_settings(args)
     call_algo(fhir_server, fhir_port, algo, connection_settings, k)
@@ -185,6 +185,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-#http://192.168.178.11:8780
